@@ -3,6 +3,7 @@
  * @param {string} moveFromFolderId - the original Google Drive folder ID from which you want to move the files
  * @param {string} moveToFolderId - the Google Drive folder ID to which you want to move the files
  */
+
 function moveAllFiles(moveFromFolderId, moveToFolderId) {
   var moveFrom = DriveApp.getFolderById(moveFromFolderId);
   var moveTo = DriveApp.getFolderById(moveToFolderId);
