@@ -1,0 +1,15 @@
+// List all tab-names of the active Google Sheet workbook
+
+function listSheetNames() {
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetNames = [];
+
+  for (var i = 0; i < spreadsheet.getSheets().length; i++) {
+    sheetNames.push(spreadsheet.getSheets()[i].getName());
+  }
+
+  var sheetNamesText = sheetNames.join('\n'); // Combine the sheet names into a single string with line breaks
+
+  var ui = SpreadsheetApp.getUi();
+  ui.alert('Sheet Names', sheetNamesText);
+}
