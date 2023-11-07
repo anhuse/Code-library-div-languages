@@ -1,1 +1,18 @@
+/**
+ * Function to move all files in a particular Google Drive folder to another folder
+ * @param {string} moveFromFolderId - the original Google Drive folder ID from which you want to move the files
+ * @param {string} moveToFolderId - the Google Drive folder ID to which you want to move the files
+ */
+function moveAllFiles(moveFromFolderId, moveToFolderId) {
+  var moveFrom = DriveApp.getFolderById(moveFromFolderId);
+  var moveTo = DriveApp.getFolderById(moveToFolderId);
+  
+  var files = moveFrom.getFiles();
+  while (files.hasNext()) {
+    var file = files.next();
+    moveTo.addFile(file);
+    moveFrom.removeFile(file);
+  }
+}
 
+// This one-by-one method takes too much time if you want to move a bulk of files at once.
