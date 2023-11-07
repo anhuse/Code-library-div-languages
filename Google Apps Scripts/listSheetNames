@@ -11,5 +11,5 @@ function listSheetNames() {
   var sheetNamesText = sheetNames.join('\n'); // Combine the sheet names into a single string with line breaks
 
   var ui = SpreadsheetApp.getUi();
-  ui.alert('Sheet Names', sheetNamesText);
+  ui.alert('Sheet Names', sheetNamesText);    // Display all sheet names as an alert
 }
