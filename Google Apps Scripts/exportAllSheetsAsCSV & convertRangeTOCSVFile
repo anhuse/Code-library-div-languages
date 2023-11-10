@@ -59,6 +59,3 @@ function convertRangeToCsvFile_(csvFileName, sheet) {
     Browser.msgBox(err);
   }
 }
-
-// This is a test addition
-// This is another test addition
