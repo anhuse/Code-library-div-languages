@@ -1,0 +1,33 @@
+Sub RemoveFiltersFromActiveTable()
+    Dim ws As Worksheet
+    Dim tbl As ListObject
+    
+    ' Check if there is a worksheet selected
+    On Error Resume Next
+    Set ws = ActiveSheet
+    On Error GoTo 0
+    
+    ' Check if the selected worksheet contains a table
+    If Not ws Is Nothing Then
+        On Error Resume Next
+        Set tbl = ws.ListObjects(1) ' Assumes the first table in the worksheet
+        On Error GoTo 0
+        
+        ' If a table is found, remove its filters
+        If Not tbl Is Nothing Then
+            tbl.AutoFilter.ShowAllData
+        Else
+            MsgBox "The active worksheet does not contain a table with filters.", vbExclamation
+        End If
+    Else
+        MsgBox "No worksheet is currently active.", vbExclamation
+    End If
+End Sub
+
+
+
+
+
+
+
+
