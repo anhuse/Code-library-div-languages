@@ -1,0 +1,147 @@
+
+Function ConvertValue(value As Variant) As String
+    If Not IsEmpty(value) Then
+        ConvertValue = Replace(value, ",", ".")
+    Else
+        ConvertValue = value
+    End If
+End Function
+
+
+Sub ExportAllTablesWithHeadersToCSV_UTF8()
+
+    'Comment --> max allowed number of decimals for script to work is 15
+    '            if more decimals the number will be formatted as 0,5610E
+
+    Dim tbl As ListObject
+    Dim ws As Worksheet
+    Dim csvFolderPath As String
+    Dim csvData As String
+    Dim row As ListRow
+    Dim col As ListColumn
+    Dim sheetIndex As Integer
+    Dim cell As Range
+    Dim numTables As Long
+    Dim tblName As String
+    
+    ' Initiating the variables containing information about the table name mappings
+    Dim mappingWs As Worksheet
+    Dim mappingRange As Range
+    
+    Dim fs As Object ' FileSystemObject
+    Set fs = CreateObject("Scripting.FileSystemObject")
+    
+    Dim FolderPath As String
+
+    ' Specify the worksheet containing the mapping
+    Set mappingWs = ThisWorkbook.Worksheets("TableMapping")
+    
+    ' Define the range of the mapping table (assuming it starts in cell A1)
+    Set mappingRange = mappingWs.Range("A1:B100" & mappingWs.Cells(mappingWs.Rows.Count, "A").End(xlUp).row)
+    
+    ' Desired CSV output folder path
+    FolderPath = InputBox("Please enter the desired folder path", "Enter folder path")
+    csvFolderPath = FolderPath & "/"
+    
+    numTables = 0
+    
+    ' Loop through all sheets
+    For sheetIndex = 1 To ThisWorkbook.Sheets.Count
+        Set ws = ThisWorkbook.Sheets(sheetIndex)
+        
+        ' Loop through all tables on the sheet
+        For Each tbl In ws.ListObjects
+        
+            tblName = tbl.Name
+            
+            On Error Resume Next ' Initiating error handling
+            
+            ' Search for the corresponding file name in the mapping table
+            Set cell = mappingRange.Find(What:=tblName, LookIn:=xlValues, LookAt:=xlWhole)
+            
+            
+            If cell.Offset(0, 2).value = "Yes" Then
+                
+        
+                tblName = cell.Offset(0, 1).value
+                
+                csvData = ""
+                    
+                ' Add headers to CSV data, with semicolon as separator
+                For Each col In tbl.ListColumns
+                    csvData = csvData & col.Name & ";"
+                Next col
+                csvData = Left(csvData, Len(csvData) - 1) & vbCrLf
+                
+                numTables = numTables + 1
+                    
+                ' Add table data to CSV
+                For Each row In tbl.ListRows
+                    For Each col In tbl.ListColumns
+                    
+                        ' Ensure all cells in Date format have the desired formatting
+                    
+                        Set cell = row.Range(1, col.Index)
+                        If IsDate(cell.value) Then
+                            cell.NumberFormat = "DD/MM/YYYY"
+                        End If
+                        
+                        ' Add new entry to data with semicolon as separator
+                        ' Ensure that all numeric columns with "," as decimal seperator now has "."
+                        
+                        If IsNumeric(cell.value) Then
+                        
+                            ' Replace commas with periods for numeric values
+                            csvData = csvData & ConvertValue(CStr(row.Range(1, col.Index).value)) & ";"
+                            
+                        Else
+                            
+                            ' For non-numeric values, just append the value as is
+                            csvData = csvData & (row.Range(1, col.Index).value) & ";"
+                            
+                        End If
+    
+                    Next col
+
+                    
+                    csvData = Left(csvData, Len(csvData) - 1) & vbCrLf
+
+
+                Next row
+                
+                ' Write CSV data to the file
+                ' Make sure the file name hsa the "In_" prefix
+                Dim csvFilePath As String
+                csvFilePath = csvFolderPath & "In_" & tblName & ".csv"
+                
+                ' Open the CSV file for output with UTF-8 encoding
+                Dim file As Object ' TextStream
+                Set file = fs.CreateTextFile(csvFilePath, True, True) ' Open the file for writing (overwrite if it exists), Unicode encoding (UTF-8) (second "True").
+            
+                ' Write CSV data to the file
+                file.Write csvData
+            
+                ' Close the file
+                file.Close
+                
+            ' If we have an error, handle the error
+            
+            If Err.Number <> 0 Then
+                ' Handle the error (e.g., display a message or log it)
+                MsgBox "An error occurred, this is the error: " & Err.Description
+                ' Clear the error
+                Err.Clear
+            End If
+            
+            On Error GoTo 0 ' Turn off eror handling
+            
+                    
+            End If
+        Next tbl
+    Next sheetIndex
+    
+    MsgBox CStr(numTables) & " tables exported as CSV files to folder: " & CStr(FolderPath), vbInformation, "Success"
+    
+End Sub
+
+
