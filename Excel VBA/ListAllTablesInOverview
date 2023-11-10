@@ -1,0 +1,35 @@
+Sub ListAllTablesInOverview()
+    Dim ws As Worksheet
+    Dim tbl As ListObject
+    Dim overviewWs As Worksheet
+    Dim rowIndex As Long
+    
+    ' Create a new worksheet named "Overview" or reference an existing one
+    On Error Resume Next
+    Set overviewWs = ThisWorkbook.Worksheets("Overview")
+    On Error GoTo 0
+    
+    If overviewWs Is Nothing Then
+        Set overviewWs = ThisWorkbook.Worksheets.Add
+        overviewWs.Name = "Overview"
+    End If
+    
+    ' Initialize the row index
+    rowIndex = 1
+    
+    ' Clear existing content in the "Overview" worksheet
+    overviewWs.Cells.Clear
+    
+    ' Loop through all tables in the workbook
+    For Each ws In ThisWorkbook.Worksheets
+        ' Loop through all tables in the worksheet
+        For Each tbl In ws.ListObjects
+            ' Add the table name to the "Overview" worksheet
+            overviewWs.Cells(rowIndex, 1).value = tbl.Name
+            rowIndex = rowIndex + 1
+        Next tbl
+    Next ws
+    
+    ' Auto-adjust column width for better readability
+    overviewWs.Columns.AutoFit
+End Sub
