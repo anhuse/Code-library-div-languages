@@ -1,0 +1,17 @@
+function SaveMailAttachmentsInDriveFolder() {
+
+  const folder = DriveApp.createFolder('Attachements');
+  const threads = GmailApp.search('from:ola.nordmann.no has:attachment',0,5) // maks 5 attatchments
+  const attachments = [];
+  
+  threads.forEach(thread => {
+    thread.getMessages().forEach(message => {
+      message.getAttachments().forEach(attachment => {
+        Logger.log(attachment);
+        const file = folder.createFile(attachment.copyBlob().setName(attachment.getName()));
+        attachments.push(attachment.getName());
+      })
+    })
+  })
+  Logger.log(attachments)
+}
