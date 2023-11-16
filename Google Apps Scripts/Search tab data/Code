@@ -1,0 +1,93 @@
+const ss = SpreadsheetApp.getActiveSpreadsheet()
+
+const formWS = ss.getSheetByName("Input data form")
+const dataWS = ss.getSheetByName("Sheet1")
+
+const searchCell = formWS.getRange("E4")
+const supplierCell = formWS.getRange("C6")
+
+const fieldRange = ["C4", "C6", "C8"]
+
+
+
+function saveRecord() {
+  
+const supplier = supplierCell.getValue()
+const SupplierColumnValues = dataWS.getRange("B:B").getValues()
+const supplierValues = SupplierColumnValues.flat()
+
+
+// In the case where an ID does not exist, go ahed and create a new record, appending it to the data
+if(!supplierValues.includes(supplier)) {
+  createNewRecord()
+  return
+}
+
+const cellFound = dataWS.getRange("B:B").createTextFinder(supplier)
+                      .matchCase(true)
+                      .matchEntireCell(true)
+                      .findNext()
+
+if(!cellFound) return
+const row = cellFound.getRow()
+
+console.log(row)
+
+// Now we update the data in-place
+const fieldValues = fieldRange.map(f => formWS.getRange(f).getValue())
+dataWS.getRange(row,1,1,fieldValues.length).setValues([fieldValues])
+searchCell.clearContent()
+
+}
+
+function createNewRecord() {
+
+  const fieldValues = fieldRange.map(f => formWS.getRange(f).getValue())
+
+  dataWS.appendRow(fieldValues)
+
+  ss.toast("New record created")
+
+}
+
+function NewRecord() {
+
+  fieldRange.forEach(f => formWS.getRange(f).clearContent())
+  searchCell.clearContent()
+
+}
+
+function Search() {
+
+
+  const searchValue = searchCell.getValue()
+  const data = dataWS.getRange("A2:C").getValues()  
+
+  const recordFound = data.filter(r => r[1] == searchValue)
+  if(recordFound.length === 0) return
+
+  fieldRange.forEach((f,i) => formWS.getRange(f).setValue(recordFound[0][i]))
+
+}
+
+
+function deleteRecord() {
+
+const supplier = supplierCell.getValue()
+
+if(supplier == "") return
+
+const cellFound = dataWS.getRange("B:B").createTextFinder(supplier)
+                      .matchCase(true)
+                      .matchEntireCell(true)
+                      .findNext()
+
+if(!cellFound) return
+const row = cellFound.getRow()
+
+// Clear all fields, re-use the NewRecord() method
+NewRecord()
+
+dataWS.deleteRow(row)
+
+}
